@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paperera — School Website Data Collector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#232017;
+    --ink-soft:#5b5749;
+    --paper:#f7f3ea;
+    --paper-raised:#fffdf7;
+    --line:#ddd5c0;
+    --seal:#a13d2c;
+    --seal-ink:#7c2e21;
+    --gold:#b3862a;
+    --gold-soft:#e8d9ab;
+    --navy:#232c47;
+    --sage:#3f6b4f;
+    --sage-soft:#dfe9e1;
+    --danger:#a13d2c;
+    --radius:2px;
+    --shadow:0 1px 0 rgba(35,32,23,.06), 0 8px 24px -14px rgba(35,32,23,.35);
+    color-scheme: light;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --ink:#efe9db;
+      --ink-soft:#b9b19c;
+      --paper:#1b1912;
+      --paper-raised:#242018;
+      --line:#3a352a;
+      --gold:#d4ab4a;
+      --gold-soft:#4a3c1e;
+      --navy:#aab4d6;
+      --sage:#8fbb9e;
+      --sage-soft:#25332a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#efe9db;
+    --ink-soft:#b9b19c;
+    --paper:#1b1912;
+    --paper-raised:#242018;
+    --line:#3a352a;
+    --gold:#d4ab4a;
+    --gold-soft:#4a3c1e;
+    --navy:#aab4d6;
+    --sage:#8fbb9e;
+    --sage-soft:#25332a;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Manrope',system-ui,-apple-system,Segoe UI,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,.serif{font-family:'Fraunces',Georgia,'Times New Roman',serif;}
+  a{color:inherit;}
+  button{font-family:inherit;}
+  img{max-width:100%;display:block;}
+  .wrap{max-width:800px;margin:0 auto;padding:0 20px;}
+  .wrap-wide{max-width:1080px;margin:0 auto;padding:0 20px;}
+
+  /* ---------- header ---------- */
+  header.site{
+    border-bottom:1px solid var(--line);
+    background:var(--paper-raised);
+    position:sticky;top:0;z-index:40;
+  }
+  .head-inner{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 20px;max-width:1080px;margin:0 auto;
+  }
+  .brand{display:flex;align-items:center;gap:10px;cursor:pointer;background:none;border:none;padding:0;}
+  .brand img{width:30px;height:30px;object-fit:contain;filter:var(--logo-filter,none);}
+  :root[data-theme="dark"] .brand img, :root:not([data-theme="light"]) .brand img{
+    @media (prefers-color-scheme: dark){ filter:invert(1); }
+  }
+  .brand .word{font-family:'Fraunces',serif;font-weight:600;font-size:19px;letter-spacing:.2px;color:var(--ink);}
+  .brand .word small{display:block;font-family:'Manrope',sans-serif;font-weight:600;font-size:10px;letter-spacing:1.5px;color:var(--ink-soft);margin-top:-2px;}
+  nav.top{display:flex;gap:18px;align-items:center;font-size:14px;font-weight:600;}
+  nav.top a, nav.top button.link{background:none;border:none;cursor:pointer;color:var(--ink-soft);font-size:14px;font-weight:600;font-family:inherit;padding:0;}
+  nav.top a:hover, nav.top button.link:hover{color:var(--ink);}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px 22px;border-radius:var(--radius);border:1px solid var(--ink);
+    background:var(--ink);color:var(--paper);font-weight:700;font-size:14.5px;
+    cursor:pointer;transition:transform .12s ease, box-shadow .12s ease;
+    text-decoration:none;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 6px 14px -6px rgba(0,0,0,.35);}
+  .btn:active{transform:translateY(0);}
+  .btn.gold{background:var(--gold);border-color:var(--gold);color:#1f1706;}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--ink);}
+  .btn.sage{background:var(--sage);border-color:var(--sage);color:#0d1b12;}
+  .btn.sm{padding:8px 14px;font-size:13px;}
+  .btn.block{width:100%;}
+  .btn[disabled]{opacity:.45;cursor:not-allowed;transform:none;}
+
+  /* ---------- home / hero ---------- */
+  .hero{padding:64px 0 40px;border-bottom:1px solid var(--line);}
+  .eyebrow{
+    font-size:12px;font-weight:700;color:var(--seal);
+    border:1px solid var(--seal);display:inline-flex;align-items:center;gap:6px;
+    padding:5px 10px;border-radius:99px;margin-bottom:18px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--seal);}
+  .hero h1{font-size:44px;line-height:1.08;font-weight:600;margin:0 0 16px;max-width:640px;}
+  .hero p.lead{font-size:17px;color:var(--ink-soft);max-width:520px;margin:0 0 28px;}
+  .hero .actions{display:flex;gap:12px;flex-wrap:wrap;}
+  @media (max-width:640px){ .hero h1{font-size:32px;} }
+
+  .ticket-strip{
+    display:flex;gap:22px;flex-wrap:wrap;margin-top:36px;padding-top:24px;border-top:1px dashed var(--line);
+    font-size:13px;color:var(--ink-soft);
+  }
+  .ticket-strip b{color:var(--ink);font-weight:700;}
+
+  /* ---------- section heading ---------- */
+  .section-head{margin:0 0 30px;}
+  .section-head .tag{font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--gold);text-transform:uppercase;}
+  .section-head h2{font-size:28px;font-weight:600;margin:6px 0 8px;}
+  .section-head p{color:var(--ink-soft);font-size:15px;max-width:560px;margin:0;}
+
+  section.block{padding:52px 0;}
+  section.block.lined{border-bottom:1px solid var(--line);}
+
+  /* ---------- pricing ---------- */
+  .plans{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  @media (max-width:720px){.plans{grid-template-columns:1fr;}}
+  .plan-card{
+    background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);
+    padding:28px 26px;display:flex;flex-direction:column;position:relative;
+  }
+  .plan-card.featured{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;}
+  .plan-tag{
+    position:absolute;top:-11px;right:24px;background:var(--gold);color:#1f1706;
+    font-size:11px;font-weight:800;letter-spacing:.4px;padding:4px 10px;border-radius:99px;
+  }
+  .plan-card h3{font-size:22px;margin:0 0 4px;font-weight:600;}
+  .plan-card .price{font-size:36px;font-weight:700;font-family:'Fraunces',serif;margin:6px 0 2px;}
+  .plan-card .price small{font-size:14px;font-weight:500;color:var(--ink-soft);}
+  .plan-card .sub{color:var(--ink-soft);font-size:13.5px;margin-bottom:18px;}
+  .plan-card ul{list-style:none;margin:0 0 22px;padding:0;flex:1;}
+  .plan-card ul li{
+    display:flex;gap:10px;align-items:flex-start;padding:7px 0;font-size:14px;border-bottom:1px dotted var(--line);
+  }
+  .plan-card ul li:last-child{border-bottom:none;}
+  .plan-card ul li .tick{color:var(--sage);font-weight:800;flex:0 0 auto;}
+  .plan-card ul li.included{color:var(--ink-soft);}
+  .plan-card ul li.included .tick{color:var(--ink-soft);}
+
+  .ai-tail{
+    margin-top:36px;border:1px dashed var(--seal);border-radius:var(--radius);
+    padding:20px 22px;background:var(--paper-raised);display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  }
+  .ai-tail .txt h4{margin:0 0 4px;font-size:16px;}
+  .ai-tail .txt p{margin:0;color:var(--ink-soft);font-size:13.5px;max-width:420px;}
+  .ai-tail .prices{display:flex;gap:16px;}
+  .ai-tail .prices div{text-align:center;}
+  .ai-tail .prices .amt{font-family:'Fraunces',serif;font-weight:700;font-size:20px;}
+  .ai-tail .prices .lbl{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;}
+
+  /* ---------- example preview boxes (shown inside wizard steps) ---------- */
+  .example{
+    border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--paper-raised);margin-bottom:18px;
+  }
+  .example .example-label{
+    font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--ink-soft);
+    padding:8px 14px;border-bottom:1px solid var(--line);background:var(--sage-soft);
+  }
+  .example .example-body{padding:16px;}
+  .mini-hero{
+    background:linear-gradient(160deg,var(--navy),#141a2e);color:#fff;border-radius:var(--radius);
+    padding:22px 18px;position:relative;overflow:hidden;
+  }
+  .mini-hero h5{margin:0 0 6px;font-size:19px;font-family:'Fraunces',serif;font-weight:600;}
+  .mini-hero p{margin:0;font-size:12.5px;opacity:.85;max-width:70%;}
+  .mini-highlights{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;}
+  .mini-highlights div{background:rgba(255,255,255,.1);border-radius:4px;padding:8px 6px;text-align:center;}
+  .mini-highlights .v{font-weight:800;font-size:14px;color:var(--gold-soft);}
+  .mini-highlights .l{font-size:9.5px;opacity:.8;margin-top:2px;}
+  .mini-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  @media (max-width:560px){.mini-cards{grid-template-columns:1fr 1fr;} .mini-highlights{grid-template-columns:1fr 1fr;}}
+  .mini-cards .c{border:1px solid var(--line);border-radius:4px;padding:10px;font-size:11.5px;}
+  .mini-cards .c b{display:block;font-size:12.5px;margin-bottom:3px;}
+  .mini-cards .c span{color:var(--ink-soft);}
+
+  /* ---------- wizard ---------- */
+  .wizard-wrap{padding:34px 0 90px;}
+  .progress-line{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+  .progress-line .seg{flex:1;height:3px;background:var(--line);border-radius:2px;overflow:hidden;}
+  .progress-line .seg i{display:block;height:100%;background:var(--seal);width:0;transition:width .25s ease;}
+  .form-no{font-size:12px;color:var(--ink-soft);font-weight:700;letter-spacing:.3px;margin-bottom:22px;}
+  .form-no b{color:var(--seal);}
+
+  .card{
+    background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);
+    padding:30px 28px;box-shadow:var(--shadow);
+  }
+  @media (max-width:640px){.card{padding:22px 18px;}}
+  .step-title{font-size:24px;font-weight:600;margin:0 0 6px;}
+  .step-sub{color:var(--ink-soft);font-size:14px;margin:0 0 24px;}
+
+  label.field-label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--ink);}
+  label.field-label .opt{color:var(--ink-soft);font-weight:500;font-style:italic;}
+  input[type=text],input[type=email],input[type=tel],input[type=number],textarea,select{
+    width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:var(--radius);
+    background:var(--paper);color:var(--ink);font-size:14.5px;font-family:inherit;margin-bottom:16px;
+  }
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--seal);outline-offset:1px;}
+  textarea{resize:vertical;min-height:80px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
+  @media (max-width:560px){.grid2{grid-template-columns:1fr;}}
+
+  .field-with-skip{border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:16px;background:var(--paper);}
+  .field-with-skip .fws-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
+  .skip-chip{
+    font-size:11.5px;font-weight:700;border:1px solid var(--line);background:var(--paper-raised);
+    color:var(--ink-soft);border-radius:99px;padding:4px 11px;cursor:pointer;white-space:nowrap;
+  }
+  .skip-chip.active{background:var(--seal);border-color:var(--seal);color:#fff;}
+  .skip-chip:hover{border-color:var(--seal);}
+  .skipped-note{font-size:12.5px;color:var(--ink-soft);font-style:italic;}
+
+  .upload-box{
+    border:1.5px dashed var(--line);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;
+    background:var(--paper);transition:border-color .15s;
+  }
+  .upload-box:hover{border-color:var(--seal);}
+  .upload-box input{display:none;}
+  .upload-box .up-icon{font-size:22px;margin-bottom:6px;}
+  .upload-box .up-txt{font-size:13px;color:var(--ink-soft);}
+  .preview-thumb{position:relative;display:inline-block;margin:6px 6px 0 0;}
+  .preview-thumb img{width:84px;height:84px;object-fit:cover;border-radius:4px;border:1px solid var(--line);}
+  .preview-thumb .rm{
+    position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:var(--seal);
+    color:#fff;border:none;font-size:12px;cursor:pointer;line-height:20px;
+  }
+
+  .repeat-item{border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px;background:var(--paper);position:relative;}
+  .repeat-item .rm-item{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:16px;}
+  .repeat-item .rm-item:hover{color:var(--seal);}
+  .add-more{border:1px dashed var(--line);border-radius:var(--radius);padding:10px;text-align:center;cursor:pointer;color:var(--ink-soft);font-size:13.5px;font-weight:700;background:transparent;width:100%;}
+  .add-more:hover{border-color:var(--seal);color:var(--seal);}
+
+  .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+  @media (max-width:560px){.check-grid{grid-template-columns:1fr;}}
+  .check-item{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:var(--radius);padding:9px 11px;font-size:13.5px;cursor:pointer;background:var(--paper);}
+  .check-item.on{border-color:var(--sage);background:var(--sage-soft);}
+  .check-item input{margin:0;}
+
+  .wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:26px;gap:10px;}
+  .wizard-nav .right-group{display:flex;gap:10px;}
+
+  .plan-pill{
+    display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;
+    border:1px solid var(--line);border-radius:99px;padding:5px 12px;margin-bottom:18px;color:var(--ink-soft);
+  }
+  .plan-pill b{color:var(--ink);}
+
+  /* ---------- success ---------- */
+  .success-wrap{padding:70px 0 100px;text-align:center;}
+  .seal-stamp{
+    width:78px;height:78px;border-radius:50%;border:3px solid var(--sage);color:var(--sage);
+    display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 22px;
+    transform:rotate(-8deg);
+  }
+  .success-wrap h2{font-size:28px;margin:0 0 10px;}
+  .success-wrap p{color:var(--ink-soft);max-width:460px;margin:0 auto 28px;}
+  .success-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:34px;}
+  .receipt{
+    max-width:520px;margin:0 auto;text-align:left;border:1px solid var(--line);border-radius:var(--radius);
+    background:var(--paper-raised);padding:20px 22px;font-size:13.5px;
+  }
+  .receipt .r-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dotted var(--line);}
+  .receipt .r-row:last-child{border-bottom:none;}
+  .receipt .r-row span:first-child{color:var(--ink-soft);}
+
+  /* ---------- admin ---------- */
+  .admin-wrap{padding:40px 0 90px;}
+  .admin-gate{max-width:380px;margin:60px auto;text-align:center;}
+  .admin-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;flex-wrap:wrap;gap:10px;}
+  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:24px;}
+  .tab{padding:10px 4px;font-size:13.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;margin-right:16px;}
+  .tab.active{color:var(--ink);border-bottom-color:var(--seal);}
+  .lead-row{
+    border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;background:var(--paper-raised);
+    cursor:pointer;
+  }
+  .lead-row .lr-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+  .lead-row .lr-top .name{font-weight:700;font-size:15px;}
+  .badge{font-size:11px;font-weight:800;padding:3px 9px;border-radius:99px;letter-spacing:.3px;}
+  .badge.basic{background:var(--sage-soft);color:var(--sage);}
+  .badge.advanced{background:var(--gold-soft);color:var(--gold);}
+  .lead-row .lr-meta{font-size:12.5px;color:var(--ink-soft);margin-top:6px;}
+  .lead-detail{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-size:13px;display:none;}
+  .lead-detail.open{display:block;}
+  .lead-detail dl{margin:0;display:grid;grid-template-columns:150px 1fr;gap:6px 10px;}
+  .lead-detail dt{color:var(--ink-soft);}
+  .lead-detail dd{margin:0;}
+  .empty-state{border:1px dashed var(--line);border-radius:var(--radius);padding:40px 20px;text-align:center;color:var(--ink-soft);}
+  .settings-block{border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:18px;background:var(--paper-raised);}
+  .settings-block h4{margin:0 0 4px;font-size:15px;}
+  .settings-block p.hint{color:var(--ink-soft);font-size:12.5px;margin:0 0 14px;}
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);
+    padding:10px 18px;border-radius:var(--radius);font-size:13.5px;font-weight:600;z-index:100;
+    box-shadow:0 8px 20px -6px rgba(0,0,0,.4);opacity:0;transition:opacity .2s;pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+
+  footer.site{border-top:1px solid var(--line);padding:26px 0;text-align:center;font-size:12.5px;color:var(--ink-soft);}
+  .hidden{display:none !important;}
+  ::selection{background:var(--gold-soft);}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="head-inner">
+    <button class="brand" onclick="goHome()" aria-label="Paperera home">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASMAAAEhCAYAAAA06MYmAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAACvoSURBVHhe7Z1bbBzneYbfmd3Z2SPPFGVTlRmdbcmuoiqxASW1LNtw3dZV0yJNmzRBUTRtnQZGr5orA2mB3hQ9BW2SXjQNUKC9aAqniAPbceIollzEkuIcLMu1FFqiKIkiJVEUucvdndk59GLnG/47oiSSOv2rfR9goN3l7Mxol/Pw+77/ZIRhGIIQQu4wZvIFQgi5E1BGhBAtoIwIIVpAGRFCtIAyIoRoAWVECNECyogQogWUESFECygjQogWUEaEEC2gjAghWkAZEUK0gDIihGgBZUQI0QLKiBCiBZQRIUQLKCNCiBZQRoQQLaCMCCFaQBkRQrSAMiKEaAFlRAjRAsqIEKIFlBEhRAsoI0KIFlBGhBAtoIwIIVpAGRFCtIAyIoRoAWVECNECyogQogWUESFECygjQogWUEaEEC2gjAghWkAZEUK0gDIihGgBZUQI0QLKiBCiBZQRIUQLKCNCiBZQRoQQLaCMCCFaQBkRQrSAMiKEaAFlRAjRAsqIEKIFlBEhRAsoI0KIFlBGhBAtoIwIIVpAGRFCtIAyIoRoAWVECNECyogQogWUESFECygjQogWUEaEEC2gjAghWkAZEUK0gDIihGjB/wPYGzLHDI7H5AAAAABJRU5ErkJggg==" alt="Paperera logo">
+      <span class="word">paperera<small>DATA COLLECTOR</small></span>
+    </button>
+    <nav class="top">
+      <a href="#" onclick="goHome();return false;">Plans</a>
+      <button class="link" onclick="startWizardFresh()">Get Started</button>
+      <button class="link" onclick="goAdmin()">Admin Portal</button>
+    </nav>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer class="site">
+  <div class="wrap-wide">Paperera — school websites, collected properly. Data stays on this device unless you export or sync it.</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+   STATE
+========================================================================= */
+const FACILITY_PRESETS = [
+  "Science Labs","Computer Lab","Library","Auditorium","Sports Ground",
+  "Art & Music Room","Smart Classrooms","Transport / Bus Facility",
+  "Medical Room","Cafeteria / Canteen","Hostel Facility","STEM / Robotics Lab"
+];
+const CURRICULUM_PRESETS = [
+  "Pre-Primary (Nursery–UKG)","Primary Wing (I–V)","Middle School (VI–VIII)",
+  "Senior Secondary (IX–XII)","CBSE Curriculum","ICSE Curriculum","State Board Curriculum"
+];
+function blankData(){
+  return {
+    schoolName:'', tagline:'', address:'', phone:'', email:'', established:'', board:'',
+    logo:null, logoSkipped:false,
+    heroImage:null, heroImageSkipped:false,
+    highlights:[{label:'',value:''},{label:'',value:''},{label:'',value:''},{label:'',value:''}],
+    highlightsSkipped:false,
+    campusImage:null, campusImageSkipped:false,
+    whyUs:[{title:'',desc:''}], whyUsSkipped:false,
+    facilitiesPreset:[], facilitiesCustom:[], facilitiesSkipped:false,
+    curriculumPreset:[], curriculumCustom:[], curriculumSkipped:false,
+    gallery:[], notices:'',
+    domainChoice:'free', domainExtension:'.in', domainName:'',
+    aiPaperTier:'none',
+    whatsapp:'', altPhone:'', socialHandle:''
+  };
+}
+
+let state = { view:'home', step:0, plan:null, d: blankData() };
+
+/* =========================================================================
+   STEP DEFINITIONS (id list depends on plan)
+========================================================================= */
+function stepsForPlan(plan){
+  const common1 = ['schoolInfo','logo','hero','highlights','campusImage','whyUs','facilities','curriculum','domain','aiPaper'];
+  const mid = [];
+  const common2 = ['contact','review'];
+  return [...common1, ...mid, ...common2];
+}
+function currentSteps(){ return stepsForPlan(state.plan || 'basic'); }
+function stepTitle(id){
+  return ({
+    schoolInfo:"School Information", logo:"Your Logo", hero:"Hero Section",
+    highlights:"Key Highlights", campusImage:"Campus Photo", whyUs:"Why Choose Us",
+    facilities:"Facilities", curriculum:"Curriculum", domain:"Domain Name",
+    aiPaper:"AI Paper Generation",
+    contact:"Contact & WhatsApp", review:"Review & Submit"
+  })[id] || id;
+}
+
+/* =========================================================================
+   HELPERS
+========================================================================= */
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(window._toastT); window._toastT=setTimeout(()=>t.classList.remove('show'),2600);
+}
+function esc(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function resizeImage(file, maxW){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxW){ h = Math.round(h * (maxW/w)); w = maxW; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if (state.view === 'home') app.innerHTML = renderHome();
+  else if (state.view === 'wizard') app.innerHTML = renderWizard();
+  else if (state.view === 'success') app.innerHTML = renderSuccess();
+  else if (state.view === 'admin') app.innerHTML = renderAdmin();
+  window.scrollTo({top:0,behavior:'instant'});
+  afterRender();
+}
+
+function goHome(){ state.view='home'; render(); }
+function goAdmin(){ state.view='admin'; state.adminTab = state.adminTab || 'leads'; render(); }
+function startWizardFresh(){
+  if (!state.plan){ document.getElementById('plans-anchor')?.scrollIntoView({behavior:'smooth'}); toast('Pick a plan below to begin'); if(state.view!=='home'){state.view='home';render();document.getElementById('plans-anchor')?.scrollIntoView();} return; }
+  state.view='wizard'; state.step=0; render();
+}
+function choosePlan(plan){
+  state.plan = plan; state.view='wizard'; state.step=0; render();
+}
+
+/* =========================================================================
+   HOME VIEW
+========================================================================= */
+function renderHome(){
+  return `
+  <section class="hero wrap">
+    <div class="eyebrow"><span class="dot"></span> FOR SCHOOLS &amp; ADMISSION TEAMS</div>
+    <h1>Your school's new website starts with one clean form.</h1>
+    <p class="lead">Send us your school's details once — logo, photos, facilities, admissions info — and we build a professional, mobile-friendly website around it. No back-and-forth on WhatsApp.</p>
+    <div class="actions">
+      <a href="#plans-anchor" class="btn gold">See plans &amp; get started</a>
+      <button class="btn ghost" onclick="goAdmin()">Admin Portal</button>
+    </div>
+    <div class="ticket-strip">
+      <div><b>2</b> plans to choose from</div>
+      <div><b>10</b> minute form, skip anything</div>
+      <div><b>1</b> place your data lives</div>
+    </div>
+  </section>
+
+  <section class="block lined wrap" id="plans-anchor">
+    <div class="section-head">
+      <div class="tag">Pricing</div>
+      <h2>Choose your plan</h2>
+      <p>Both plans include a full, professional website. Advanced adds live admissions, data collection, and an AI-powered paper generator.</p>
+    </div>
+    <div class="plans">
+      <div class="plan-card">
+        <h3>Basic Website</h3>
+        <div class="price">₹2,500</div>
+        <div class="sub">One-time · everything a school needs to go online</div>
+        <ul>
+          <li><span class="tick">✓</span> Professional school website</li>
+          <li><span class="tick">✓</span> Domain included — free subdomain or custom domain name</li>
+          <li><span class="tick">✓</span> School information pages</li>
+          <li><span class="tick">✓</span> Contact details page</li>
+          <li><span class="tick">✓</span> Photo gallery</li>
+          <li><span class="tick">✓</span> Notice board</li>
+          <li><span class="tick">✓</span> Mobile-friendly design</li>
+          <li><span class="tick">✓</span> Basic admin panel — edit info yourself</li>
+        </ul>
+        <button class="btn ghost block" onclick="choosePlan('basic')">Choose Basic</button>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-tag">MOST CHOSEN</div>
+        <h3>Advanced Website</h3>
+        <div class="price">₹5,000</div>
+        <div class="sub">One-time · a website that runs admissions for you</div>
+        <ul>
+          <li class="included"><span class="tick">✓</span> Everything in Basic, plus:</li>
+          <li><span class="tick">✓</span> Online admission inquiry form <span style="color:var(--ink-soft);font-weight:500;">(standard fields, ready to go)</span></li>
+          <li><span class="tick">✓</span> Student &amp; parent data collection</li>
+          <li><span class="tick">✓</span> Export submissions anytime</li>
+          <li><span class="tick">✓</span> Fully editable site — info, gallery, notices</li>
+          <li><span class="tick">✓</span> Advanced admin panel</li>
+        </ul>
+        <button class="btn gold block" onclick="choosePlan('advanced')">Choose Advanced</button>
+      </div>
+    </div>
+
+    <div class="ai-tail">
+      <div class="txt">
+        <h4>AI Paper Generation — optional add-on</h4>
+        <p>Not bundled into either plan — this is a separate feature you can switch on for either Basic or Advanced. Generate practice or exam papers automatically once your site is live, priced separately by volume.</p>
+      </div>
+      <div class="prices">
+        <div><div class="amt">₹150</div><div class="lbl">Trial · 8–15 papers</div></div>
+        <div><div class="amt">₹500</div><div class="lbl">Full · 40–45 papers</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block wrap">
+    <div class="section-head">
+      <div class="tag">How it looks</div>
+      <h2>A preview of what clients see</h2>
+      <p>When you fill the form, this is roughly the shape your site takes. Every section below can be skipped if it doesn't apply to your school.</p>
+    </div>
+    <div class="example">
+      <div class="example-label">Hero + Key Highlights</div>
+      <div class="example-body">
+        <div class="mini-hero">
+          <h5>Your School Name</h5>
+          <p>Your tagline goes here — one warm sentence about what makes your school different.</p>
+          <div class="mini-highlights">
+            <div><div class="v">100%</div><div class="l">Board Pass Rate</div></div>
+            <div><div class="v">35+</div><div class="l">Years of Legacy</div></div>
+            <div><div class="v">1:18</div><div class="l">Teacher Ratio</div></div>
+            <div><div class="v">25+</div><div class="l">Sports &amp; Clubs</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="example">
+      <div class="example-label">Why Choose Us</div>
+      <div class="example-body">
+        <div class="mini-cards">
+          <div class="c"><b>Academic Excellence</b><span>Board results and rankings.</span></div>
+          <div class="c"><b>Experienced Faculty</b><span>Dedicated, qualified teachers.</span></div>
+          <div class="c"><b>Modern Infrastructure</b><span>Labs, library, smart classrooms.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block lined wrap" style="text-align:center;padding-top:10px;">
+    <button class="btn gold" onclick="document.getElementById('plans-anchor').scrollIntoView({behavior:'smooth'})">Pick a plan to start the form</button>
+  </section>
+  `;
+}
+
+/* =========================================================================
+   WIZARD VIEW
+========================================================================= */
+function renderWizard(){
+  const steps = currentSteps();
+  const id = steps[state.step];
+  const total = steps.length;
+  const pct = Math.round(((state.step)/(total-1))*100);
+  let segs='';
+  for(let i=0;i<total;i++){
+    segs += `<div class="seg"><i style="width:${i<=state.step?100:0}%"></i></div>`;
+  }
+  return `
+  <div class="wrap wizard-wrap">
+    <span class="plan-pill">Plan: <b>${state.plan==='advanced'?'Advanced':'Basic'} — ₹${totalPrice()}</b></span>
+    <div class="progress-line">${segs}</div>
+    <div class="form-no">SECTION <b>${state.step+1}</b> OF ${total} — ${stepTitle(id).toUpperCase()}</div>
+    <div class="card">
+      ${renderStepBody(id)}
+    </div>
+    <div class="wizard-nav">
+      <button class="btn ghost" onclick="${state.step===0?'goHome()':'wizPrev()'}">${state.step===0?'← Back to plans':'← Back'}</button>
+      <div class="right-group">
+        ${stepIsSkippable(id) ? `<button class="btn ghost" onclick="wizSkip()">Skip this section</button>` : ''}
+        <button class="btn gold" onclick="wizNext()">${id==='review' ? 'Submit' : 'Continue →'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function stepIsSkippable(id){ return !['schoolInfo','contact','review','domain','aiPaper'].includes(id); }
+
+function renderStepBody(id){
+  const d = state.d;
+  switch(id){
+    case 'schoolInfo': return `
+      <h2 class="step-title">Tell us about the school</h2>
+      <p class="step-sub">The basics — this appears across every page of the site.</p>
+      <div class="grid2">
+        <div><label class="field-label">School name</label><input type="text" id="f_schoolName" value="${esc(d.schoolName)}" placeholder="e.g. Sunrise Public School"></div>
+        <div><label class="field-label">Established year <span class="opt">(optional)</span></label><input type="text" id="f_established" value="${esc(d.established)}" placeholder="e.g. 1998"></div>
+      </div>
+      <label class="field-label">Tagline <span class="opt">(optional)</span></label>
+      <input type="text" id="f_tagline" value="${esc(d.tagline)}" placeholder="e.g. Nurturing excellence, building futures">
+      <label class="field-label">Full address</label>
+      <textarea id="f_address" placeholder="Street, city, state, pincode">${esc(d.address)}</textarea>
+      <div class="grid2">
+        <div><label class="field-label">Phone number</label><input type="tel" id="f_phone" value="${esc(d.phone)}" placeholder="+91 ..."></div>
+        <div><label class="field-label">Email address</label><input type="email" id="f_email" value="${esc(d.email)}" placeholder="admissions@school.edu.in"></div>
+      </div>
+      <label class="field-label">Board affiliation <span class="opt">(optional)</span></label>
+      <input type="text" id="f_board" value="${esc(d.board)}" placeholder="e.g. CBSE, ICSE, State Board">
+    `;
+
+    case 'logo': return `
+      <h2 class="step-title">Your school's logo</h2>
+      <p class="step-sub">Upload a clear logo — used in the header and footer of your site.</p>
+      ${skipHeader('logoSkipped', d.logoSkipped)}
+      ${!d.logoSkipped ? `
+        <div class="upload-box" onclick="document.getElementById('f_logo_input').click()">
+          <div class="up-icon">🖼️</div>
+          <div class="up-txt">Click to upload logo (PNG or JPG)</div>
+          <input type="file" id="f_logo_input" accept="image/*" onchange="handleSingleUpload(this,'logo')">
+        </div>
+        ${d.logo ? `<div class="preview-thumb"><img src="${d.logo}"><button class="rm" onclick="clearSingle('logo')">✕</button></div>` : ''}
+      ` : `<p class="skipped-note">Skipped — we'll use a plain text name until you send a logo.</p>`}
+    `;
+
+    case 'hero': return `
+      <h2 class="step-title">Hero section</h2>
+      <p class="step-sub">The first thing visitors see. Here's an example of how it renders:</p>
+      <div class="example">
+        <div class="example-label">Example</div>
+        <div class="example-body"><div class="mini-hero"><h5>Nalanda International School</h5><p>Nurturing excellence, building futures since 1989.</p></div></div>
+      </div>
+      ${skipHeader('heroImageSkipped', d.heroImageSkipped, 'Skip hero image')}
+      ${!d.heroImageSkipped ? `
+        <div class="upload-box" onclick="document.getElementById('f_hero_input').click()">
+          <div class="up-icon">🏫</div>
+          <div class="up-txt">Click to upload a hero / campus-front photo</div>
+          <input type="file" id="f_hero_input" accept="image/*" onchange="handleSingleUpload(this,'heroImage')">
+        </div>
+        ${d.heroImage ? `<div class="preview-thumb"><img src="${d.heroImage}"><button class="rm" onclick="clearSingle('heroImage')">✕</button></div>` : ''}
+      ` : `<p class="skipped-note">Skipped — we'll use a stock campus image as a placeholder.</p>`}
+      <p class="skipped-note" style="margin-top:16px;">We'll write your headline and sub-line for you to start — you can change them anytime from the admin panel, no need to decide now.</p>
+    `;
+
+    case 'highlights': return `
+      <h2 class="step-title">Key highlights</h2>
+      <p class="step-sub">Four quick stats shown on the homepage — e.g. pass rate, years running, teacher ratio.</p>
+      <div class="example">
+        <div class="example-label">Example</div>
+        <div class="example-body"><div class="mini-highlights" style="background:var(--navy);border-radius:6px;padding:12px;">
+          <div><div class="v" style="color:#e8d9ab">100%</div><div class="l" style="color:#cfd3e0">Board Pass Rate</div></div>
+          <div><div class="v" style="color:#e8d9ab">35+</div><div class="l" style="color:#cfd3e0">Years of Legacy</div></div>
+          <div><div class="v" style="color:#e8d9ab">1:18</div><div class="l" style="color:#cfd3e0">Teacher Ratio</div></div>
+          <div><div class="v" style="color:#e8d9ab">25+</div><div class="l" style="color:#cfd3e0">Sports &amp; Clubs</div></div>
+        </div></div>
+      </div>
+      ${skipHeader('highlightsSkipped', d.highlightsSkipped)}
+      ${!d.highlightsSkipped ? `
+        <div class="grid2">
+          ${d.highlights.map((h,i)=>`
+            <div style="border:1px solid var(--line);border-radius:4px;padding:10px;margin-bottom:12px;">
+              <label class="field-label">Stat ${i+1} — value <span class="opt">e.g. 100%, 35+</span></label>
+              <input type="text" value="${esc(h.value)}" oninput="updateHighlight(${i},'value',this.value)" placeholder="e.g. 100%">
+              <label class="field-label">Stat ${i+1} — label</label>
+              <input type="text" value="${esc(h.label)}" oninput="updateHighlight(${i},'label',this.value)" placeholder="e.g. Board Pass Rate">
+            </div>
+          `).join('')}
+        </div>
+      ` : `<p class="skipped-note">Skipped — no highlights bar will be shown.</p>`}
+    `;
+
+    case 'campusImage': return `
+      <h2 class="step-title">Campus photo</h2>
+      <p class="step-sub">A wide shot of your building, playground, or classrooms for the About page.</p>
+      ${skipHeader('campusImageSkipped', d.campusImageSkipped)}
+      ${!d.campusImageSkipped ? `
+        <div class="upload-box" onclick="document.getElementById('f_campus_input').click()">
+          <div class="up-icon">📷</div><div class="up-txt">Click to upload a campus photo</div>
+          <input type="file" id="f_campus_input" accept="image/*" onchange="handleSingleUpload(this,'campusImage')">
+        </div>
+        ${d.campusImage ? `<div class="preview-thumb"><img src="${d.campusImage}"><button class="rm" onclick="clearSingle('campusImage')">✕</button></div>` : ''}
+      ` : `<p class="skipped-note">Skipped.</p>`}
+    `;
+
+    case 'whyUs': return `
+      <h2 class="step-title">Why choose your school</h2>
+      <p class="step-sub">A few reasons parents should pick you — shown as cards. Add as many as you like.</p>
+      <div class="example">
+        <div class="example-label">Example — how this looks on the site</div>
+        <div class="example-body"><div class="mini-cards">
+          <div class="c"><b>Academic Excellence</b><span>35+ years of top board results.</span></div>
+          <div class="c"><b>Experienced Faculty</b><span>Dedicated, qualified teachers.</span></div>
+          <div class="c"><b>Safe Environment</b><span>CCTV, trained staff, secure campus.</span></div>
+        </div></div>
+      </div>
+      ${skipHeader('whyUsSkipped', d.whyUsSkipped)}
+      ${!d.whyUsSkipped ? `
+        ${d.whyUs.map((w,i)=>`
+          <div class="repeat-item">
+            ${d.whyUs.length>1 ? `<button class="rm-item" onclick="removeWhyUs(${i})">✕</button>` : ''}
+            <label class="field-label">Reason title</label>
+            <input type="text" value="${esc(w.title)}" oninput="updateWhyUs(${i},'title',this.value)" placeholder="e.g. Academic Excellence">
+            <label class="field-label">Short description</label>
+            <textarea oninput="updateWhyUs(${i},'desc',this.value)" placeholder="One or two lines">${esc(w.desc)}</textarea>
+          </div>
+        `).join('')}
+        <button class="add-more" onclick="addWhyUs()">+ Add another reason</button>
+      ` : `<p class="skipped-note">Skipped — we'll use general highlights instead.</p>`}
+    `;
+
+    case 'facilities': return `
+      <h2 class="step-title">Facilities</h2>
+      <p class="step-sub">Pick what your school has, or add your own.</p>
+      ${skipHeader('facilitiesSkipped', d.facilitiesSkipped)}
+      ${!d.facilitiesSkipped ? `
+        <div class="check-grid">
+          ${FACILITY_PRESETS.map(f=>`
+            <label class="check-item ${d.facilitiesPreset.includes(f)?'on':''}">
+              <input type="checkbox" ${d.facilitiesPreset.includes(f)?'checked':''} onchange="toggleFacility('${esc(f)}')"> ${f}
+            </label>
+          `).join('')}
+        </div>
+        ${customListEditor('facilitiesCustom', d.facilitiesCustom, 'Add a facility not listed above')}
+      ` : `<p class="skipped-note">Skipped.</p>`}
+    `;
+
+    case 'curriculum': return `
+      <h2 class="step-title">Curriculum / academic wings</h2>
+      <p class="step-sub">How is your school structured by grade or stream?</p>
+      <div class="example">
+        <div class="example-label">Example</div>
+        <div class="example-body"><div class="mini-cards">
+          <div class="c"><b>Pre-Primary</b><span>Nursery – UKG</span></div>
+          <div class="c"><b>Primary Wing</b><span>Class I – V</span></div>
+          <div class="c"><b>Senior Secondary</b><span>Class IX – XII</span></div>
+        </div></div>
+      </div>
+      ${skipHeader('curriculumSkipped', d.curriculumSkipped)}
+      ${!d.curriculumSkipped ? `
+        <div class="check-grid">
+          ${CURRICULUM_PRESETS.map(f=>`
+            <label class="check-item ${d.curriculumPreset.includes(f)?'on':''}">
+              <input type="checkbox" ${d.curriculumPreset.includes(f)?'checked':''} onchange="toggleCurriculum('${esc(f)}')"> ${f}
+            </label>
+          `).join('')}
+        </div>
+        ${customListEditor('curriculumCustom', d.curriculumCustom, 'Add a wing / stream not listed above')}
+      ` : `<p class="skipped-note">Skipped.</p>`}
+    `;
+
+    case 'domain': return `
+      <h2 class="step-title">Your domain name</h2>
+      <p class="step-sub">A domain is included with your plan — free subdomain, or a custom domain name at no extra cost.</p>
+      <div class="check-grid">
+        <label class="check-item ${d.domainChoice==='free'?'on':''}">
+          <input type="radio" name="domainChoice" ${d.domainChoice==='free'?'checked':''} onchange="setDomainChoice('free')"> Free subdomain (included)
+        </label>
+        <label class="check-item ${d.domainChoice==='custom'?'on':''}">
+          <input type="radio" name="domainChoice" ${d.domainChoice==='custom'?'checked':''} onchange="setDomainChoice('custom')"> Custom domain (included)
+        </label>
+      </div>
+      ${d.domainChoice==='custom' ? `
+        <label class="field-label">Domain extension</label>
+        <select id="f_domainExt" onchange="state.d.domainExtension=this.value">
+          <option value=".in" ${d.domainExtension==='.in'?'selected':''}>.in</option>
+          <option value=".org" ${d.domainExtension==='.org'?'selected':''}>.org</option>
+        </select>
+        <label class="field-label">Desired domain name <span class="opt">(without the extension)</span></label>
+        <input type="text" id="f_domainName" value="${esc(d.domainName)}" placeholder="e.g. xyzschool">
+        <p class="skipped-note">We'll check availability of <b>${esc(d.domainName)||'yourname'}${esc(d.domainExtension)}</b> and confirm with you — included in your plan, no extra charge.</p>
+      ` : `<p class="skipped-note">We'll set you up on a free Paperera subdomain — you can switch to a custom domain anytime later.</p>`}
+    `;
+
+    case 'aiPaper': return `
+      <h2 class="step-title">AI paper generation</h2>
+      <p class="step-sub">An optional feature, not part of either plan's price — pick it only if you want it. Charged separately once your site is live.</p>
+      <div class="check-grid" style="grid-template-columns:1fr;">
+        <label class="check-item ${d.aiPaperTier==='none'?'on':''}">
+          <input type="radio" name="aiPaperTier" ${d.aiPaperTier==='none'?'checked':''} onchange="setAiPaperTier('none')"> Not now
+        </label>
+        <label class="check-item ${d.aiPaperTier==='trial'?'on':''}">
+          <input type="radio" name="aiPaperTier" ${d.aiPaperTier==='trial'?'checked':''} onchange="setAiPaperTier('trial')"> Trial — ₹150 <span style="color:var(--ink-soft);font-weight:500;">(8–15 papers)</span>
+        </label>
+        <label class="check-item ${d.aiPaperTier==='full'?'on':''}">
+          <input type="radio" name="aiPaperTier" ${d.aiPaperTier==='full'?'checked':''} onchange="setAiPaperTier('full')"> Full — ₹500 <span style="color:var(--ink-soft);font-weight:500;">(40–45 papers)</span>
+        </label>
+      </div>
+    `;
+
+    case 'contact': return `
+      <h2 class="step-title">Where should we send this?</h2>
+      <p class="step-sub">So we can confirm details and reach you about the build.</p>
+      <label class="field-label">WhatsApp number</label>
+      <input type="tel" id="f_whatsapp" value="${esc(d.whatsapp)}" placeholder="+91 ...">
+      <div class="grid2">
+        <div><label class="field-label">Alternate phone <span class="opt">(optional)</span></label><input type="tel" id="f_altPhone" value="${esc(d.altPhone)}"></div>
+        <div><label class="field-label">Instagram / social handle <span class="opt">(optional)</span></label><input type="text" id="f_socialHandle" value="${esc(d.socialHandle)}"></div>
+      </div>
+    `;
+
+    case 'review': return renderReview();
+  }
+  return '';
+}
+
+function skipHeader(flagKey, isSkipped, label){
+  return `<div class="fws-head" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+    <button class="skip-chip ${isSkipped?'active':''}" onclick="toggleFieldSkip('${flagKey}')">${isSkipped?'✓ Skipped':(label||'Skip this')}</button>
+  </div>`;
+}
+
+function customListEditor(key, list, placeholder, isFlatFieldList, excludeList){
+  // renders a simple add/remove tag-style list for custom string entries
+  const items = isFlatFieldList ? list : list;
+  return `
+    <div id="custom_${key}">
+      ${items.map((v,i)=>`
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <input type="text" value="${esc(v)}" oninput="updateCustomListItem('${key}',${i},this.value)" placeholder="${placeholder}" style="margin-bottom:0;">
+          <button class="rm-item" style="position:static;font-size:18px;" onclick="removeCustomListItem('${key}',${i})">✕</button>
+        </div>
+      `).join('')}
+    </div>
+    <button class="add-more" onclick="addCustomListItem('${key}')">+ Add custom item</button>
+  `;
+}
+
+function renderReview(){
+  const d = state.d;
+  const rows = [
+    ['School', d.schoolName || '—'],
+    ['Plan', `${state.plan==='advanced' ? 'Advanced' : 'Basic'} — ₹${planBasePrice(state.plan)}`],
+    ['Address', d.address || '—'],
+    ['Phone', d.phone || '—'],
+    ['Email', d.email || '—'],
+    ['Logo', d.logoSkipped ? 'Skipped' : (d.logo ? 'Uploaded' : 'Not added')],
+    ['Hero image', d.heroImageSkipped ? 'Skipped' : (d.heroImage ? 'Uploaded' : 'Not added')],
+    ['Key highlights', d.highlightsSkipped ? 'Skipped' : d.highlights.filter(h=>h.value||h.label).length + ' stat(s)'],
+    ['Why choose us', d.whyUsSkipped ? 'Skipped' : d.whyUs.filter(w=>w.title).length + ' reason(s)'],
+    ['Facilities', d.facilitiesSkipped ? 'Skipped' : (d.facilitiesPreset.length + d.facilitiesCustom.filter(Boolean).length) + ' selected'],
+    ['Curriculum', d.curriculumSkipped ? 'Skipped' : (d.curriculumPreset.length + d.curriculumCustom.filter(Boolean).length) + ' selected'],
+    ['Domain', d.domainChoice==='custom' ? `${d.domainName||'(name not set)'}${d.domainExtension} (included)` : 'Free subdomain'],
+    ['AI paper generation', d.aiPaperTier==='none' ? 'Not selected' : (d.aiPaperTier==='trial' ? 'Trial — ₹150' : 'Full — ₹500')],
+  ];
+  if (state.plan === 'advanced'){
+    rows.push(['Admission & inquiry form', 'Standard form included — editable from the admin panel']);
+  }
+  rows.push(['WhatsApp', d.whatsapp || '—']);
+  rows.push(['Total amount', `₹${totalPrice()}`]);
+
+  return `
+    <h2 class="step-title">Review your details</h2>
+    <p class="step-sub">Check everything below, then submit. You can still edit anything after this.</p>
+    <div class="receipt">
+      ${rows.map(r=>`<div class="r-row"><span>${r[0]}</span><span>${esc(String(r[1]))}</span></div>`).join('')}
+    </div>
+  `;
+}
+
+/* -------- field interactions -------- */
+function toggleFieldSkip(key){ state.d[key] = !state.d[key]; render(); }
+function handleSingleUpload(input, key){
+  const file = input.files[0]; if (!file) return;
+  resizeImage(file, 900).then(url => { state.d[key] = url; render(); });
+}
+function clearSingle(key){ state.d[key] = null; render(); }
+function handleGalleryUpload(input){
+  const files = Array.from(input.files || []);
+  Promise.all(files.map(f=>resizeImage(f,900))).then(urls=>{
+    state.d.gallery = state.d.gallery.concat(urls); render();
+  });
+}
+function removeGalleryImage(i){ state.d.gallery.splice(i,1); render(); }
+function updateHighlight(i,field,val){ state.d.highlights[i][field]=val; }
+function addWhyUs(){ state.d.whyUs.push({title:'',desc:''}); render(); }
+function removeWhyUs(i){ state.d.whyUs.splice(i,1); render(); }
+function updateWhyUs(i,field,val){ state.d.whyUs[i][field]=val; }
+function toggleFacility(f){
+  const arr = state.d.facilitiesPreset;
+  const idx = arr.indexOf(f);
+  if (idx>-1) arr.splice(idx,1); else arr.push(f);
+  render();
+}
+function toggleCurriculum(f){
+  const arr = state.d.curriculumPreset;
+  const idx = arr.indexOf(f);
+  if (idx>-1) arr.splice(idx,1); else arr.push(f);
+  render();
+}
+function addCustomListItem(key){ state.d[key].push(''); render(); }
+function removeCustomListItem(key,i){ state.d[key].splice(i,1); render(); }
+function updateCustomListItem(key,i,val){ state.d[key][i]=val; }
+function setDomainChoice(v){ state.d.domainChoice = v; render(); }
+function setAiPaperTier(v){ state.d.aiPaperTier = v; render(); }
+
+/* -------- pricing -------- */
+function planBasePrice(plan){ return plan==='advanced' ? 5000 : 2500; }
+function domainPrice(d){ return 0; }
+function aiPaperPrice(d){ return d.aiPaperTier==='trial' ? 150 : (d.aiPaperTier==='full' ? 500 : 0); }
+function totalPrice(){ return planBasePrice(state.plan) + domainPrice(state.d) + aiPaperPrice(state.d); }
+
+function pullTextInputs(id){
+  const d = state.d;
+  const get = k => document.getElementById(k) ? document.getElementById(k).value : undefined;
+  if (id==='schoolInfo'){ d.schoolName=get('f_schoolName')||''; d.established=get('f_established')||''; d.tagline=get('f_tagline')||''; d.address=get('f_address')||''; d.phone=get('f_phone')||''; d.email=get('f_email')||''; d.board=get('f_board')||''; }
+  if (id==='domain'){ const v=get('f_domainName'); if (v!==undefined) d.domainName=v; }
+  if (id==='contact'){ d.whatsapp=get('f_whatsapp')||''; d.altPhone=get('f_altPhone')||''; d.socialHandle=get('f_socialHandle')||''; }
+}
+
+function wizPrev(){
+  pullTextInputs(currentSteps()[state.step]);
+  state.step = Math.max(0, state.step-1); render();
+}
+function wizSkip(){
+  const id = currentSteps()[state.step];
+  const skipMap = {logo:'logoSkipped',hero:'heroImageSkipped',highlights:'highlightsSkipped',campusImage:'campusImageSkipped',whyUs:'whyUsSkipped',facilities:'facilitiesSkipped',curriculum:'curriculumSkipped'};
+  if (skipMap[id]) state.d[skipMap[id]] = true;
+  wizNext(true);
+}
+function wizNext(alreadySkipped){
+  const steps = currentSteps();
+  const id = steps[state.step];
+  if (!alreadySkipped) pullTextInputs(id);
+  if (id === 'schoolInfo' && !state.d.schoolName){ toast('Please enter the school name to continue'); return; }
+  if (id === 'contact' && !state.d.whatsapp){ toast('Please add a WhatsApp number so we can reach you'); return; }
+  if (id === 'review'){ submitLead(); return; }
+  state.step = Math.min(steps.length-1, state.step+1);
+  render();
+}
+
+/* =========================================================================
+   SUBMIT
+========================================================================= */
+let lastSubmittedLead = null;
+
+function buildLeadObject(){
+  return {
+    id: 'lead_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
+    submittedAt: new Date().toISOString(),
+    plan: state.plan,
+    data: JSON.parse(JSON.stringify(state.d))
+  };
+}
+
+async function submitLead(){
+  const lead = buildLeadObject();
+  lastSubmittedLead = lead;
+  saveLeadLocally(lead);
+  trySupabaseSync(lead);
+  state.view = 'success'; render();
+}
+
+function saveLeadLocally(lead){
+  try{
+    const all = JSON.parse(localStorage.getItem('paperera_leads')||'[]');
+    all.unshift(lead);
+    localStorage.setItem('paperera_leads', JSON.stringify(all));
+  }catch(e){ console.warn('local save failed', e); }
+}
+
+/* =========================================================================
+   ADMIN — DEFAULT SETTINGS
+   These apply automatically on every device until someone changes them
+   from Admin → Settings on that device (a per-device change only
+   overrides that one browser, same pattern as the Supabase config below).
+========================================================================= */
+const DEFAULT_ADMIN_SETTINGS = {
+  passcode: 'jaisingh123',
+  receiveWhatsapp: '9979370684'
+};
+
+/* =========================================================================
+   SUPABASE — DEFAULT CONFIG
+   Fill this in ONCE with your real project URL + anon key, then every
+   device/browser that opens this file will sync automatically — no need
+   to enter it in Admin → Settings each time. The Supabase "anon" key is
+   designed to be safely public in client code like this; your leads
+   table's Row Level Security (see supabase_schema.sql) only allows it to
+   INSERT new rows, not read/edit/delete anything.
+   Leave enabled:false until you've pasted in real values.
+========================================================================= */
+const DEFAULT_SUPABASE_CONFIG = {
+  url: 'https://njogonkkffpngbcoulss.supabase.co',       // e.g. 'https://xxxxxxxxxxxx.supabase.co'
+  anonKey: 'sb_publishable_dmUNbEb0Ba-4o6GfXsO3UA_fb51_ebJ',    // e.g. 'eyJhbGciOi...'
+  enabled: true // set to true once url + anonKey are filled in
+};
+
+function getSupabaseConfig(){
+  try{
+    const stored = JSON.parse(localStorage.getItem('paperera_supabase')||'null');
+    // A config saved from the Settings panel on THIS device wins.
+    if (stored) return stored;
+  }catch(e){}
+  // Otherwise fall back to the config baked into this file, so it works
+  // the same on every device without any per-browser setup.
+  return DEFAULT_SUPABASE_CONFIG;
+}
+function setSupabaseConfig(cfg){ localStorage.setItem('paperera_supabase', JSON.stringify(cfg)); }
+
+async function trySupabaseSync(lead){
+  const cfg = getSupabaseConfig();
+  if (!cfg || !cfg.enabled || !cfg.url || !cfg.anonKey) return;
+  try{
+    const res = await fetch(cfg.url.replace(/\/$/,'') + '/rest/v1/leads', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'apikey': cfg.anonKey,
+        'Authorization': 'Bearer ' + cfg.anonKey,
+        'Prefer':'return=minimal'
+      },
+      body: JSON.stringify([{ id: lead.id, submitted_at: lead.submittedAt, plan: lead.plan, data: lead.data }])
+    });
+    if (!res.ok){ console.warn('Supabase sync failed', res.status); }
+  }catch(e){ console.warn('Supabase sync error', e); }
+}
+
+/* -------- pull leads (and their images) DOWN from Supabase into this device -------- */
+async function fetchCloudLeads(){
+  const cfg = getSupabaseConfig();
+  if (!cfg || !cfg.enabled || !cfg.url || !cfg.anonKey) return null;
+  try{
+    const res = await fetch(cfg.url.replace(/\/$/,'') + '/rest/v1/leads?select=*&order=submitted_at.desc', {
+      method:'GET',
+      headers:{ 'apikey': cfg.anonKey, 'Authorization': 'Bearer ' + cfg.anonKey }
+    });
+    if (!res.ok){ console.warn('Cloud fetch failed', res.status, await res.text()); return {error:res.status}; }
+    const rows = await res.json();
+    return { rows: rows.map(r => ({ id: r.id, submittedAt: r.submitted_at, plan: r.plan, data: r.data })) };
+  }catch(e){ console.warn('Cloud fetch error', e); return {error:'network'}; }
+}
+
+async function syncCloudLeads(showFeedback){
+  const cfg = getSupabaseConfig();
+  if (!cfg || !cfg.enabled || !cfg.url || !cfg.anonKey){
+    if (showFeedback) toast('Turn on Supabase sync in Settings first');
+    return;
+  }
+  if (showFeedback) toast('Syncing from cloud…');
+  const result = await fetchCloudLeads();
+  if (!result || result.error){
+    if (showFeedback){
+      if (result && result.error === 401 || result && result.error === 403){
+        showManualCopy(
+          `Cloud sync could not read leads (HTTP ${result.error}).\n\nThis almost always means your Supabase table's Row Level Security only allows INSERT, not SELECT, for the public anon key — which is correct for security by default, but it also blocks the Admin panel from pulling leads back down.\n\nTo fix it, run this in your Supabase SQL editor:\n\ncreate policy \"Admin can read leads\" on leads\nfor select\nusing (true);\n\nNote: this makes every stored lead (including uploaded images) readable by anyone who has your site's public anon key, since it lives in this HTML file. For a public school-leads form that's usually an acceptable trade-off, but if you want it locked down, ask about restricting reads through a private Edge Function instead of the public anon key.`,
+          'cloud-sync-fix.txt'
+        );
+      } else if (result && result.error === 404){
+        showManualCopy(
+          `Cloud sync failed (HTTP 404) — the "leads" table doesn't exist yet in this Supabase project. Run supabase_schema.sql in your Supabase SQL editor first, then try Sync again.`,
+          'cloud-sync-fix.txt'
+        );
+      } else {
+        toast('Cloud sync failed — check Settings → Test connection for details');
+      }
+    }
+    return;
+  }
+  const local = getLeads();
+  let added = 0;
+  result.rows.forEach(lead=>{
+    if (!local.find(l=>l.id===lead.id)){ local.unshift(lead); added++; }
+  });
+  local.sort((a,b)=> new Date(b.submittedAt) - new Date(a.submittedAt));
+  saveLeadsAll(local);
+  if (showFeedback) toast(added ? `Synced ${added} new lead(s) from the cloud` : 'Already up to date');
+  render();
+}
+
+/* =========================================================================
+   SUCCESS VIEW
+========================================================================= */
+function renderSuccess(){
+  const lead = lastSubmittedLead;
+  const d = lead ? lead.data : state.d;
+  return `
+  <div class="wrap success-wrap">
+    <div class="seal-stamp">✓</div>
+    <h2>Details received</h2>
+    <p>Thanks — we've logged ${esc(d.schoolName)||'your school'}'s details on the <b>${state.plan==='advanced'?'Advanced':'Basic'}</b> plan. Download a copy below and send it to us on WhatsApp so nothing gets lost.</p>
+    <div class="success-actions">
+      <button class="btn gold" onclick="downloadLeadJSON()">Download submission</button>
+      <button class="btn sage" onclick="sendToWhatsApp()">Send via WhatsApp</button>
+      <button class="btn ghost" onclick="copySummary()">Copy summary</button>
+    </div>
+    <div class="receipt">
+      <div class="r-row"><span>School</span><span>${esc(d.schoolName)||'—'}</span></div>
+      <div class="r-row"><span>Plan</span><span>${state.plan==='advanced'?'Advanced':'Basic'} — ₹${planBasePrice(state.plan)}</span></div>
+      <div class="r-row"><span>Domain</span><span>${d.domainChoice==='custom' ? `${d.domainName||'(name not set)'}${d.domainExtension} (included)` : 'Free subdomain'}</span></div>
+      <div class="r-row"><span>AI paper generation</span><span>${d.aiPaperTier==='none' ? 'Not selected' : (d.aiPaperTier==='trial' ? 'Trial — ₹150' : 'Full — ₹500')}</span></div>
+      <div class="r-row"><span>WhatsApp</span><span>${esc(d.whatsapp)||'—'}</span></div>
+      <div class="r-row"><span><b>Total amount</b></span><span><b>₹${planBasePrice(state.plan) + domainPrice(d) + aiPaperPrice(d)}</b></span></div>
+      <div class="r-row"><span>Submitted</span><span>${lead ? new Date(lead.submittedAt).toLocaleString() : '—'}</span></div>
+    </div>
+    <p style="margin-top:26px;"><button class="btn ghost" onclick="goHome()">Back to home</button></p>
+  </div>`;
+}
+
+function buildSummaryText(){
+  const lead = lastSubmittedLead; if (!lead) return '';
+  const d = lead.data;
+  let lines = [];
+  lines.push(`PAPERERA — NEW SCHOOL WEBSITE LEAD`);
+  lines.push(`Plan: ${lead.plan === 'advanced' ? 'Advanced (₹5,000)' : 'Basic (₹2,500)'}`);
+  lines.push(`School: ${d.schoolName || '-'}`);
+  if (d.tagline) lines.push(`Tagline: ${d.tagline}`);
+  if (d.address) lines.push(`Address: ${d.address}`);
+  if (d.phone) lines.push(`Phone: ${d.phone}`);
+  if (d.email) lines.push(`Email: ${d.email}`);
+  if (d.board) lines.push(`Board: ${d.board}`);
+  if (!d.highlightsSkipped) lines.push(`Highlights: ` + d.highlights.filter(h=>h.value||h.label).map(h=>`${h.value} ${h.label}`).join(' | '));
+  if (!d.whyUsSkipped) lines.push(`Why choose us: ` + d.whyUs.filter(w=>w.title).map(w=>w.title).join(', '));
+  if (!d.facilitiesSkipped) lines.push(`Facilities: ` + d.facilitiesPreset.concat(d.facilitiesCustom.filter(Boolean)).join(', '));
+  if (!d.curriculumSkipped) lines.push(`Curriculum: ` + d.curriculumPreset.concat(d.curriculumCustom.filter(Boolean)).join(', '));
+  if (lead.plan==='advanced') lines.push(`Admission & inquiry form: standard form included`);
+  lines.push(`Domain: ` + (d.domainChoice==='custom' ? `${d.domainName||'(name not set)'}${d.domainExtension} (included)` : 'Free subdomain'));
+  lines.push(`AI paper generation: ` + (d.aiPaperTier==='none' ? 'Not selected' : (d.aiPaperTier==='trial' ? 'Trial (₹150)' : 'Full (₹500)')));
+  lines.push(`Total amount: ₹${planBasePrice(lead.plan) + domainPrice(d) + aiPaperPrice(d)}`);
+  lines.push(`WhatsApp: ${d.whatsapp || '-'}`);
+  lines.push(`Submitted: ${new Date(lead.submittedAt).toLocaleString()}`);
+  lines.push(`(Images were included in the downloaded file, not this text.)`);
+  return lines.join('\n');
+}
+
+async function downloadLeadJSON(){
+  const lead = lastSubmittedLead; if (!lead) return;
+  const filename = `paperera_${(lead.data.schoolName||'lead').replace(/[^a-z0-9]+/gi,'_').toLowerCase()}_${Date.now()}.json`;
+  const jsonStr = JSON.stringify(lead, null, 2);
+  try{
+    const downloads = await claude.use('downloads');
+    if (downloads){
+      const res = await downloads.save({filename, data: jsonStr});
+      toast(res.status === 'saved' ? 'Downloaded!' : 'File sent.');
+      return;
+    }
+  }catch(e){ /* fall through to manual */ }
+  if (triggerBrowserDownload(filename, jsonStr, 'application/json')){
+    toast('Downloaded!');
+    return;
+  }
+  showManualCopy(jsonStr, filename);
+}
+
+function copySummary(){
+  const text = buildSummaryText();
+  navigator.clipboard?.writeText(text).then(()=>toast('Summary copied!')).catch(()=>showManualCopy(text,'summary.txt'));
+}
+
+function sendToWhatsApp(){
+  const cfg = getSupabaseConfig();
+  const number = (JSON.parse(localStorage.getItem('paperera_settings')||'{}').receiveWhatsapp || '').replace(/[^0-9]/g,'');
+  const text = encodeURIComponent(buildSummaryText());
+  const url = number ? `https://wa.me/${number}?text=${text}` : `https://wa.me/?text=${text}`;
+  window.open(url, '_blank');
+}
+
+function triggerBrowserDownload(filename, data, mime){
+  try{
+    const blob = new Blob([data], {type: mime || 'application/octet-stream'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    return true;
+  }catch(e){ console.warn('browser download failed', e); return false; }
+}
+
+function showManualCopy(text, filename){
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;';
+  modal.innerHTML = `<div style="background:var(--paper-raised);border-radius:4px;padding:20px;max-width:520px;width:100%;">
+    <h3 style="margin:0 0 10px;font-size:16px;">Couldn't trigger a direct download</h3>
+    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 10px;">Copy the text below and save it as <b>${esc(filename)}</b>, or paste it straight into the Admin panel's import box.</p>
+    <textarea style="width:100%;height:180px;font-family:monospace;font-size:11.5px;">${esc(text)}</textarea>
+    <div style="text-align:right;margin-top:10px;"><button class="btn ghost sm" onclick="this.closest('div[style]').parentElement.remove()">Close</button></div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+/* =========================================================================
+   ADMIN VIEW
+========================================================================= */
+function getLeads(){ try{ return JSON.parse(localStorage.getItem('paperera_leads')||'[]'); }catch(e){ return []; } }
+function saveLeadsAll(list){ localStorage.setItem('paperera_leads', JSON.stringify(list)); }
+function getAdminSettings(){
+  let stored = {};
+  try{ stored = JSON.parse(localStorage.getItem('paperera_settings')||'{}'); }catch(e){ stored = {}; }
+  return {
+    passcode: stored.passcode || DEFAULT_ADMIN_SETTINGS.passcode,
+    receiveWhatsapp: stored.receiveWhatsapp || DEFAULT_ADMIN_SETTINGS.receiveWhatsapp
+  };
+}
+function setAdminSettings(s){ localStorage.setItem('paperera_settings', JSON.stringify(s)); }
+
+function renderAdmin(){
+  if (!state.adminUnlocked){
+    return `
+    <div class="wrap admin-gate">
+      <h2 style="font-size:22px;">Admin Portal</h2>
+      <p style="color:var(--ink-soft);font-size:14px;margin-bottom:18px;">Enter your passcode to view leads and settings.</p>
+      <input type="text" id="f_passcode" placeholder="Passcode" style="text-align:center;">
+      <button class="btn gold block" onclick="tryUnlockAdmin()">Enter</button>
+      <p style="margin-top:20px;"><button class="btn ghost sm" onclick="goHome()">← Back home</button></p>
+    </div>`;
+  }
+  const leads = getLeads();
+  const tab = state.adminTab || 'leads';
+  return `
+  <div class="wrap-wide admin-wrap">
+    <div class="admin-topbar">
+      <h2 style="font-size:22px;margin:0;">Admin Portal</h2>
+      <div style="display:flex;gap:10px;">
+        <button class="btn sage sm" onclick="syncCloudLeads(true)">Sync from Cloud</button>
+        <button class="btn ghost sm" onclick="exportAll('json')">Export JSON</button>
+        <button class="btn ghost sm" onclick="exportAll('csv')">Export CSV</button>
+        <button class="btn ghost sm" onclick="goHome()">Exit</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab ${tab==='leads'?'active':''}" onclick="setAdminTab('leads')">Leads (${leads.length})</div>
+      <div class="tab ${tab==='import'?'active':''}" onclick="setAdminTab('import')">Import</div>
+      <div class="tab ${tab==='settings'?'active':''}" onclick="setAdminTab('settings')">Settings</div>
+    </div>
+    ${tab==='leads' ? renderAdminLeads(leads) : ''}
+    ${tab==='import' ? renderAdminImport() : ''}
+    ${tab==='settings' ? renderAdminSettings() : ''}
+  </div>`;
+}
+
+function renderAdminLeads(leads){
+  if (!leads.length){
+    return `<div class="empty-state">No leads yet. Submissions made on this device appear here automatically — or use <b>Import</b> to bring in a submission a client sent you.</div>`;
+  }
+  return leads.map((l,i)=>`
+    <div class="lead-row" onclick="toggleLeadDetail(${i})">
+      <div class="lr-top">
+        <span class="name">${esc(l.data.schoolName)||'(no name given)'}</span>
+        <span class="badge ${l.plan}">${l.plan==='advanced'?'ADVANCED':'BASIC'}</span>
+      </div>
+      <div class="lr-meta">${new Date(l.submittedAt).toLocaleString()} · ${esc(l.data.whatsapp)||'no whatsapp given'}</div>
+      <div class="lead-detail" id="lead_detail_${i}">
+        <dl>
+          <dt>Tagline</dt><dd>${esc(l.data.tagline)||'—'}</dd>
+          <dt>Address</dt><dd>${esc(l.data.address)||'—'}</dd>
+          <dt>Phone</dt><dd>${esc(l.data.phone)||'—'}</dd>
+          <dt>Email</dt><dd>${esc(l.data.email)||'—'}</dd>
+          <dt>Board</dt><dd>${esc(l.data.board)||'—'}</dd>
+          <dt>Highlights</dt><dd>${l.data.highlightsSkipped?'Skipped':l.data.highlights.filter(h=>h.value||h.label).map(h=>`${esc(h.value)} ${esc(h.label)}`).join(' · ')||'—'}</dd>
+          <dt>Why choose us</dt><dd>${l.data.whyUsSkipped?'Skipped':l.data.whyUs.filter(w=>w.title).map(w=>esc(w.title)).join(', ')||'—'}</dd>
+          <dt>Facilities</dt><dd>${l.data.facilitiesSkipped?'Skipped':l.data.facilitiesPreset.concat(l.data.facilitiesCustom.filter(Boolean)).join(', ')||'—'}</dd>
+          <dt>Curriculum</dt><dd>${l.data.curriculumSkipped?'Skipped':l.data.curriculumPreset.concat(l.data.curriculumCustom.filter(Boolean)).join(', ')||'—'}</dd>
+          ${l.plan==='advanced' ? `<dt>Admission &amp; inquiry form</dt><dd>Standard form included</dd>` : ''}
+          <dt>Domain</dt><dd>${l.data.domainChoice==='custom' ? `${esc(l.data.domainName)||'(name not set)'}${esc(l.data.domainExtension)} (included)` : 'Free subdomain'}</dd>
+          <dt>AI paper generation</dt><dd>${l.data.aiPaperTier==='none' ? 'Not selected' : (l.data.aiPaperTier==='trial' ? 'Trial — ₹150' : 'Full — ₹500')}</dd>
+          <dt>Total amount</dt><dd>₹${planBasePrice(l.plan) + domainPrice(l.data) + aiPaperPrice(l.data)}</dd>
+          <dt>Gallery photos</dt><dd>${(l.data.gallery||[]).length} (add more anytime from Settings)</dd>
+          <dt>Logo</dt><dd>${l.data.logo ? 'Included in this record' : (l.data.logoSkipped?'Skipped':'Not added')}</dd>
+        </dl>
+        <div style="margin-top:10px;text-align:right;"><button class="btn ghost sm" onclick="event.stopPropagation();deleteLead(${i})">Delete</button></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderAdminImport(){
+  return `
+  <div class="settings-block">
+    <h4>Import a submission</h4>
+    <p class="hint">If a client downloaded their submission and sent it to you (WhatsApp/email), paste that JSON here, or upload the file.</p>
+    <textarea id="import_area" placeholder="Paste the submission JSON here" style="min-height:140px;font-family:monospace;font-size:12px;"></textarea>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button class="btn gold sm" onclick="importPasted()">Import from text</button>
+      <label class="btn ghost sm" style="cursor:pointer;">Upload .json file
+        <input type="file" accept=".json,application/json" style="display:none;" onchange="importFromFile(this)">
+      </label>
+    </div>
+  </div>`;
+}
+
+function renderAdminSettings(){
+  const s = getAdminSettings();
+  const sb = getSupabaseConfig() || {url:'',anonKey:'',enabled:false};
+  return `
+  <div class="settings-block">
+    <h4>Admin passcode</h4>
+    <p class="hint">Change the passcode used to open this panel (stored only on this device).</p>
+    <input type="text" id="s_passcode" value="${esc(s.passcode||'')}" placeholder="Passcode">
+    <button class="btn ghost sm" onclick="saveGeneralSettings()">Save</button>
+  </div>
+  <div class="settings-block">
+    <h4>WhatsApp number to receive leads</h4>
+    <p class="hint">Used by the client's "Send via WhatsApp" button after they submit a form.</p>
+    <input type="text" id="s_whatsapp" value="${esc(s.receiveWhatsapp||'')}" placeholder="+91 9XXXXXXXXX">
+    <button class="btn ghost sm" onclick="saveGeneralSettings()">Save</button>
+  </div>
+  <div class="settings-block">
+    <h4>Supabase sync <span style="font-size:11px;color:var(--ink-soft);font-weight:600;">(optional)</span></h4>
+    <p class="hint">Connect your own Supabase project so every submission, from any device, lands in your database automatically. Run the schema in <code>supabase_schema.sql</code> (provided alongside this file) to create the <code>leads</code> table. For this to work the same on every device without re-entering it, ask whoever set up the site to fill in the <code>DEFAULT_SUPABASE_CONFIG</code> block near the top of the script in paperera.html. What you save below only overrides it on this one browser/device.</p>
+    <label class="field-label">Project URL</label>
+    <input type="text" id="sb_url" value="${esc(sb.url)}" placeholder="https://xxxx.supabase.co">
+    <label class="field-label">Anon public key</label>
+    <input type="text" id="sb_key" value="${esc(sb.anonKey)}" placeholder="eyJhbGciOi...">
+    <label class="check-item ${sb.enabled?'on':''}" style="display:inline-flex;margin-bottom:14px;">
+      <input type="checkbox" id="sb_enabled" ${sb.enabled?'checked':''}> Enable Supabase sync
+    </label>
+    <br>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <button class="btn ghost sm" onclick="saveSupabaseSettings()">Save Supabase settings</button>
+      <button class="btn ghost sm" onclick="testSupabaseConnection()">Test connection</button>
+      <button class="btn ghost sm" onclick="clearDeviceSupabaseOverride()">Clear this device's override</button>
+    </div>
+  </div>
+  <div class="settings-block">
+    <h4>Danger zone</h4>
+    <p class="hint">Clears every lead stored on this device. Cannot be undone.</p>
+    <button class="btn ghost sm" onclick="clearAllLeads()" style="border-color:var(--seal);color:var(--seal);">Delete all leads</button>
+  </div>
+  `;
+}
+
+function setAdminTab(t){ state.adminTab = t; render(); }
+function toggleLeadDetail(i){ const el = document.getElementById('lead_detail_'+i); if (el) el.classList.toggle('open'); }
+function deleteLead(i){
+  const leads = getLeads(); leads.splice(i,1); saveLeadsAll(leads); render(); toast('Lead deleted');
+}
+function clearAllLeads(){
+  if (!confirm('Delete all stored leads on this device?')) return;
+  saveLeadsAll([]); render(); toast('All leads cleared');
+}
+function tryUnlockAdmin(){
+  const entered = document.getElementById('f_passcode').value;
+  const s = getAdminSettings();
+  const expected = s.passcode || DEFAULT_ADMIN_SETTINGS.passcode;
+  if (entered === expected){ state.adminUnlocked = true; state.adminTab='leads'; render(); syncCloudLeads(false); }
+  else toast('Incorrect passcode');
+}
+function saveGeneralSettings(){
+  const s = getAdminSettings();
+  s.passcode = document.getElementById('s_passcode').value || DEFAULT_ADMIN_SETTINGS.passcode;
+  s.receiveWhatsapp = document.getElementById('s_whatsapp').value || '';
+  setAdminSettings(s); toast('Settings saved');
+}
+function saveSupabaseSettings(){
+  const cfg = {
+    url: document.getElementById('sb_url').value.trim(),
+    anonKey: document.getElementById('sb_key').value.trim(),
+    enabled: document.getElementById('sb_enabled').checked
+  };
+  setSupabaseConfig(cfg); toast('Supabase settings saved');
+}
+function clearDeviceSupabaseOverride(){
+  localStorage.removeItem('paperera_supabase');
+  toast('Cleared — this browser now uses the config baked into the file');
+  render();
+}
+async function testSupabaseConnection(){
+  const cfg = {
+    url: document.getElementById('sb_url').value.trim(),
+    anonKey: document.getElementById('sb_key').value.trim()
+  };
+  if (!cfg.url || !cfg.anonKey){ showManualCopy('Fill in both Project URL and Anon public key first, then try again.', 'supabase-test.txt'); toast('Fill in URL and key first'); return; }
+  toast('Testing…');
+  try{
+    const res = await fetch(cfg.url.replace(/\/$/,'') + '/rest/v1/leads?select=id&limit=1', {
+      method:'GET',
+      headers:{ 'apikey': cfg.anonKey, 'Authorization': 'Bearer ' + cfg.anonKey }
+    });
+    const bodyText = await res.text();
+    if (res.ok){
+      toast('✓ Connected — the leads table is reachable');
+    } else {
+      let hint = '';
+      if (res.status === 401 || res.status === 403) hint = 'This usually means the anon key is wrong, incomplete, or doesn\'t match this project.';
+      else if (res.status === 404) hint = 'This usually means the "leads" table doesn\'t exist yet — run supabase_schema.sql in your Supabase SQL editor.';
+      else if (res.status === 400) hint = 'Check the Project URL is exactly right (no trailing text/spaces).';
+      showManualCopy(
+        `Supabase test failed.\n\nHTTP status: ${res.status}\n\nResponse body:\n${bodyText}\n\n${hint}`,
+        'supabase-test-result.txt'
+      );
+      toast('✗ Failed — see details');
+    }
+  }catch(e){
+    showManualCopy(
+      `Supabase test failed with a network/CORS error before a response came back.\n\nError: ${e.message}\n\nCommon causes:\n- The Project URL is wrong or has a typo\n- No internet connection\n- The browser blocked the request (rare for Supabase, which allows all origins by default)\n\nOpen your browser's DevTools → Network tab and retry to see the exact failed request for more detail.`,
+      'supabase-test-error.txt'
+    );
+    toast('✗ Network error — see details');
+  }
+}
+
+function importPasted(){
+  const txt = document.getElementById('import_area').value.trim();
+  if (!txt) return;
+  try{ mergeImportedLead(JSON.parse(txt)); toast('Imported!'); render(); }
+  catch(e){ toast('That did not look like valid JSON'); }
+}
+function importFromFile(input){
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{ mergeImportedLead(JSON.parse(e.target.result)); toast('Imported!'); render(); }
+    catch(err){ toast('Could not read that file'); }
+  };
+  reader.readAsText(file);
+}
+function mergeImportedLead(obj){
+  const leads = getLeads();
+  const incoming = Array.isArray(obj) ? obj : [obj];
+  incoming.forEach(lead=>{
+    if (!lead.id) lead.id = 'lead_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    if (!leads.find(l=>l.id===lead.id)) leads.unshift(lead);
+  });
+  saveLeadsAll(leads);
+}
+
+async function exportAll(type){
+  const leads = getLeads();
+  if (!leads.length){ toast('No leads to export'); return; }
+  let filename, data;
+  if (type === 'json'){
+    filename = `paperera_leads_${Date.now()}.json`;
+    data = JSON.stringify(leads, null, 2);
+  } else {
+    const headers = ['School','Plan','Phone','Email','WhatsApp','Address','Board','Domain','AI Paper Tier','Total Amount','Gallery Photos','Submitted'];
+    const rows = leads.map(l=>[
+      l.data.schoolName, l.plan, l.data.phone, l.data.email, l.data.whatsapp, l.data.address, l.data.board,
+      l.data.domainChoice==='custom' ? `${l.data.domainName||''}${l.data.domainExtension||''}` : 'free subdomain',
+      l.data.aiPaperTier||'none',
+      planBasePrice(l.plan) + domainPrice(l.data) + aiPaperPrice(l.data),
+      (l.data.gallery||[]).length,
+      l.submittedAt
+    ].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+    filename = `paperera_leads_${Date.now()}.csv`;
+    data = [headers.join(','), ...rows].join('\n');
+  }
+  try{
+    const downloads = await claude.use('downloads');
+    if (downloads){ await downloads.save({filename, data}); toast('Exported!'); return; }
+  }catch(e){}
+  if (triggerBrowserDownload(filename, data, type==='json' ? 'application/json' : 'text/csv')){
+    toast('Exported!');
+    return;
+  }
+  showManualCopy(data, filename);
+}
+
+/* =========================================================================
+   INIT
+========================================================================= */
+function afterRender(){ /* hook for future per-view JS wiring if needed */ }
+render();
+</script>
+</body>
+</html>
